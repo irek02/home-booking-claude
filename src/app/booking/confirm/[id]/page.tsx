@@ -195,8 +195,8 @@ export default function BookingConfirmation() {
                   <div className="col-md-6">
                     <h6 className="fw-bold">Guest Information</h6>
                     <p>
-                      <strong>Name:</strong> {session.user?.name}<br />
-                      <strong>Email:</strong> {session.user?.email}
+                      <strong>Name:</strong> {session?.user?.name}<br />
+                      <strong>Email:</strong> {session?.user?.email}
                     </p>
                   </div>
                 </div>
