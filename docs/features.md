@@ -6,7 +6,7 @@
 - [x] User registration and login
 
 ### 2. Property Listings
-- [ ] Create property listing form
+- [x] Create property listing form
 - [ ] Property details page
 - [ ] Property amenities checklist
 

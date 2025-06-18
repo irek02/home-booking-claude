@@ -16,6 +16,21 @@
       "static/chunks/main-app.js",
       "static/chunks/app/auth/signin/page.js"
     ],
+    "/listings/create/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/listings/create/page.js"
+    ],
+    "/properties/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/properties/page.js"
+    ],
+    "/properties/[id]/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/properties/[id]/page.js"
+    ],
     "/not-found": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",

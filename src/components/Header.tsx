@@ -13,11 +13,25 @@ export default function Header() {
           HomeBooking
         </Link>
         
+        <div className="navbar-nav me-auto">
+          <Link href="/properties" className="nav-link">
+            Browse Properties
+          </Link>
+        </div>
+        
         <div className="d-flex align-items-center">
           {status === 'loading' ? (
             <div className="text-muted">Loading...</div>
           ) : session ? (
             <div className="d-flex align-items-center">
+              {session.user.role === 'host' && (
+                <Link
+                  href="/listings/create"
+                  className="btn btn-success btn-sm me-3"
+                >
+                  Create Listing
+                </Link>
+              )}
               <div className="me-3">
                 <span className="text-muted">Welcome, </span>
                 <span className="fw-medium">{session.user.name}</span>
