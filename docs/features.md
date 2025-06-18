@@ -7,19 +7,14 @@
 
 ### 2. Property Listings
 - [x] Create property listing form
-- [ ] Property details page
-- [ ] Property amenities checklist
+- [x] Property details page
+- [x] Property amenities checklist
 
-### 3. Search & Discovery
-- [ ] Search by location
-- [ ] Filter by price range
-- [ ] Property grid/list view
-
-### 4. Booking System
-- [ ] Booking request flow
-- [ ] Date selection
-- [ ] Guest count selection
-- [ ] Booking confirmation
+### 3. Booking System
+- [x] Booking request flow
+- [x] Date selection
+- [x] Guest count selection
+- [x] Booking confirmation
 
 ## Future Features (Beyond Today)
 

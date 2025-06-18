@@ -17,6 +17,11 @@ export default function Header() {
           <Link href="/properties" className="nav-link">
             Browse Properties
           </Link>
+          {session && (
+            <Link href="/bookings" className="nav-link">
+              My Bookings
+            </Link>
+          )}
         </div>
         
         <div className="d-flex align-items-center">

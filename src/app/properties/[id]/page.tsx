@@ -1,16 +1,27 @@
 'use client'
 
 import { useState } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import Header from '@/components/Header'
 import { getPropertyById } from '@/data/mockProperties'
 import { PROPERTY_TYPES } from '@/types/property'
+import { calculateBookingPrice, isValidDateRange } from '@/utils/booking'
+import { useSession } from 'next-auth/react'
 
 export default function PropertyDetails() {
   const params = useParams()
+  const router = useRouter()
+  const { data: session } = useSession()
   const propertyId = params.id as string
   const property = getPropertyById(propertyId)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
+  
+  // Booking form state
+  const [checkInDate, setCheckInDate] = useState('')
+  const [checkOutDate, setCheckOutDate] = useState('')
+  const [guestCount, setGuestCount] = useState(1)
+  const [isBooking, setIsBooking] = useState(false)
+  const [bookingError, setBookingError] = useState('')
 
   if (!property) {
     return (
@@ -34,6 +45,57 @@ export default function PropertyDetails() {
 
   const prevImage = () => {
     setCurrentImageIndex((prev) => (prev - 1 + property.images.length) % property.images.length)
+  }
+
+  // Calculate price breakdown
+  const priceCalculation = checkInDate && checkOutDate 
+    ? calculateBookingPrice(checkInDate, checkOutDate, property.pricing.basePrice, property.pricing.cleaningFee)
+    : null
+
+  const handleBookingSubmit = async () => {
+    setBookingError('')
+    
+    if (!session) {
+      router.push('/auth/signin')
+      return
+    }
+
+    if (!checkInDate || !checkOutDate) {
+      setBookingError('Please select check-in and check-out dates')
+      return
+    }
+
+    if (!isValidDateRange(checkInDate, checkOutDate)) {
+      setBookingError('Please select valid dates')
+      return
+    }
+
+    if (guestCount > property.details.maxGuests) {
+      setBookingError(`Maximum ${property.details.maxGuests} guests allowed`)
+      return
+    }
+
+    setIsBooking(true)
+
+    try {
+      const booking = {
+        propertyId,
+        checkInDate,
+        checkOutDate,
+        guestCount,
+        totalPrice: priceCalculation?.total || 0
+      }
+
+      // Store booking data in sessionStorage to pass to confirmation page
+      sessionStorage.setItem('pendingBooking', JSON.stringify(booking))
+      
+      // Navigate to booking confirmation
+      router.push(`/booking/confirm/${propertyId}`)
+    } catch (error) {
+      setBookingError('Failed to process booking. Please try again.')
+    } finally {
+      setIsBooking(false)
+    }
   }
 
   return (
@@ -164,21 +226,39 @@ export default function PropertyDetails() {
                   </div>
                 </div>
 
-                <form>
+                <form onSubmit={(e) => { e.preventDefault(); handleBookingSubmit(); }}>
                   <div className="row mb-3">
                     <div className="col-6">
                       <label className="form-label small text-muted">CHECK-IN</label>
-                      <input type="date" className="form-control" />
+                      <input 
+                        type="date" 
+                        className="form-control" 
+                        value={checkInDate}
+                        onChange={(e) => setCheckInDate(e.target.value)}
+                        min={new Date().toISOString().split('T')[0]}
+                        required
+                      />
                     </div>
                     <div className="col-6">
                       <label className="form-label small text-muted">CHECK-OUT</label>
-                      <input type="date" className="form-control" />
+                      <input 
+                        type="date" 
+                        className="form-control" 
+                        value={checkOutDate}
+                        onChange={(e) => setCheckOutDate(e.target.value)}
+                        min={checkInDate || new Date().toISOString().split('T')[0]}
+                        required
+                      />
                     </div>
                   </div>
 
                   <div className="mb-3">
                     <label className="form-label small text-muted">GUESTS</label>
-                    <select className="form-select">
+                    <select 
+                      className="form-select"
+                      value={guestCount}
+                      onChange={(e) => setGuestCount(parseInt(e.target.value))}
+                    >
                       {Array.from({ length: property.details.maxGuests }, (_, i) => i + 1).map(num => (
                         <option key={num} value={num}>
                           {num} guest{num > 1 ? 's' : ''}
@@ -187,9 +267,19 @@ export default function PropertyDetails() {
                     </select>
                   </div>
 
+                  {bookingError && (
+                    <div className="alert alert-danger py-2 mb-3">
+                      <small>{bookingError}</small>
+                    </div>
+                  )}
+
                   <div className="d-grid mb-3">
-                    <button type="button" className="btn btn-primary btn-lg">
-                      Reserve
+                    <button 
+                      type="submit" 
+                      className="btn btn-primary btn-lg"
+                      disabled={isBooking || !checkInDate || !checkOutDate}
+                    >
+                      {isBooking ? 'Processing...' : 'Reserve'}
                     </button>
                   </div>
 
@@ -199,24 +289,28 @@ export default function PropertyDetails() {
                 </form>
 
                 {/* Price Breakdown */}
-                <hr />
-                <div className="small">
-                  <div className="d-flex justify-content-between mb-1">
-                    <span>${property.pricing.basePrice} x 5 nights</span>
-                    <span>${property.pricing.basePrice * 5}</span>
-                  </div>
-                  {property.pricing.cleaningFee && (
-                    <div className="d-flex justify-content-between mb-1">
-                      <span>Cleaning fee</span>
-                      <span>${property.pricing.cleaningFee}</span>
+                {priceCalculation && (
+                  <>
+                    <hr />
+                    <div className="small">
+                      <div className="d-flex justify-content-between mb-1">
+                        <span>${property.pricing.basePrice} x {priceCalculation.nights} night{priceCalculation.nights > 1 ? 's' : ''}</span>
+                        <span>${priceCalculation.basePrice}</span>
+                      </div>
+                      {property.pricing.cleaningFee && (
+                        <div className="d-flex justify-content-between mb-1">
+                          <span>Cleaning fee</span>
+                          <span>${property.pricing.cleaningFee}</span>
+                        </div>
+                      )}
+                      <hr />
+                      <div className="d-flex justify-content-between fw-bold">
+                        <span>Total</span>
+                        <span>${priceCalculation.total}</span>
+                      </div>
                     </div>
-                  )}
-                  <hr />
-                  <div className="d-flex justify-content-between fw-bold">
-                    <span>Total</span>
-                    <span>${property.pricing.basePrice * 5 + (property.pricing.cleaningFee || 0)}</span>
-                  </div>
-                </div>
+                  </>
+                )}
               </div>
             </div>
           </div>
