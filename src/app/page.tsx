@@ -9,37 +9,41 @@ export default function Home() {
   return (
     <>
       <Header />
-      <main className="flex min-h-screen flex-col items-center justify-center p-24">
-        <div className="z-10 max-w-5xl w-full items-center justify-center text-center">
-          <h1 className="text-4xl font-bold mb-8">
+      <main className="container-fluid d-flex flex-column align-items-center justify-content-center" style={{minHeight: '80vh', padding: '3rem'}}>
+        <div className="text-center" style={{maxWidth: '800px'}}>
+          <h1 className="display-4 fw-bold mb-4">
             Hello World!
           </h1>
-          <p className="text-xl mb-8">
+          <p className="fs-3 mb-5">
             Welcome to your Home Booking Application
           </p>
           
           {status === 'loading' ? (
-            <div className="text-gray-500">Loading authentication...</div>
+            <div className="text-muted">Loading authentication...</div>
           ) : session ? (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-6 max-w-md mx-auto">
-              <h2 className="text-lg font-semibold text-green-800 mb-2">
-                🎉 Successfully signed in!
-              </h2>
-              <div className="text-left text-sm text-green-700">
-                <p><strong>Name:</strong> {session.user.name}</p>
-                <p><strong>Email:</strong> {session.user.email}</p>
-                <p><strong>Role:</strong> {session.user.role}</p>
-                <p><strong>User ID:</strong> {session.user.id}</p>
+            <div className="card border-success" style={{maxWidth: '500px', margin: '0 auto'}}>
+              <div className="card-body bg-success bg-opacity-10">
+                <h2 className="card-title fs-5 fw-semibold text-success mb-3">
+                  🎉 Successfully signed in!
+                </h2>
+                <div className="text-start">
+                  <p className="card-text mb-2"><strong>Name:</strong> {session.user.name}</p>
+                  <p className="card-text mb-2"><strong>Email:</strong> {session.user.email}</p>
+                  <p className="card-text mb-2"><strong>Role:</strong> {session.user.role}</p>
+                  <p className="card-text mb-0"><strong>User ID:</strong> {session.user.id}</p>
+                </div>
               </div>
             </div>
           ) : (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 max-w-md mx-auto">
-              <h2 className="text-lg font-semibold text-blue-800 mb-2">
-                Not signed in
-              </h2>
-              <p className="text-blue-700 text-sm">
-                Sign in to access your personalized home booking experience.
-              </p>
+            <div className="card border-primary" style={{maxWidth: '500px', margin: '0 auto'}}>
+              <div className="card-body bg-primary bg-opacity-10">
+                <h2 className="card-title fs-5 fw-semibold text-primary mb-3">
+                  Not signed in
+                </h2>
+                <p className="card-text text-primary">
+                  Sign in to access your personalized home booking experience.
+                </p>
+              </div>
             </div>
           )}
         </div>

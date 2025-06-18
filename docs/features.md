@@ -3,9 +3,7 @@
 ## Core Features to Implement Today
 
 ### 1. User Authentication & Profiles
-- [ ] User registration and login
-- [ ] User profile management
-- [ ] Host vs Guest role distinction
+- [x] User registration and login
 
 ### 2. Property Listings
 - [ ] Create property listing form
