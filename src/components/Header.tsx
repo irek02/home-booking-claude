@@ -18,9 +18,14 @@ export default function Header() {
             Browse Properties
           </Link>
           {session && (
-            <Link href="/bookings" className="nav-link">
-              My Bookings
-            </Link>
+            <>
+              <Link href="/bookings" className="nav-link">
+                My Bookings
+              </Link>
+              <Link href="/messages" className="nav-link">
+                Messages
+              </Link>
+            </>
           )}
         </div>
         

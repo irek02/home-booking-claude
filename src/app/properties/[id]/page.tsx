@@ -7,6 +7,7 @@ import { getPropertyById } from '@/data/mockProperties'
 import { PROPERTY_TYPES } from '@/types/property'
 import { calculateBookingPrice, isValidDateRange } from '@/utils/booking'
 import { useSession } from 'next-auth/react'
+import { createConversation, getConversationsByUser } from '@/utils/messageStorage'
 
 export default function PropertyDetails() {
   const params = useParams()
@@ -22,6 +23,9 @@ export default function PropertyDetails() {
   const [guestCount, setGuestCount] = useState(1)
   const [isBooking, setIsBooking] = useState(false)
   const [bookingError, setBookingError] = useState('')
+
+  // Messaging state
+  const [isCreatingConversation, setIsCreatingConversation] = useState(false)
 
   if (!property) {
     return (
@@ -95,6 +99,51 @@ export default function PropertyDetails() {
       setBookingError('Failed to process booking. Please try again.')
     } finally {
       setIsBooking(false)
+    }
+  }
+
+  const handleMessageHost = async () => {
+    if (!session) {
+      router.push('/auth/signin')
+      return
+    }
+
+    // Don't allow hosts to message themselves
+    if (session.user?.role === 'host') {
+      return
+    }
+
+    setIsCreatingConversation(true)
+
+    try {
+      // Check if conversation already exists
+      const userConversations = getConversationsByUser(session.user?.id || '')
+      const existingConversation = userConversations.find(
+        conv => conv.propertyId === propertyId && conv.guestId === session.user?.id
+      )
+
+      if (existingConversation) {
+        // Navigate to existing conversation
+        router.push(`/messages/${existingConversation.id}`)
+      } else {
+        // Create new conversation
+        const conversation = createConversation(
+          propertyId,
+          property.title,
+          property.images[0],
+          session.user?.id || '',
+          session.user?.name || '',
+          property.hostId,
+          'Property Host', // We'll use a generic name for now
+        )
+        
+        // Navigate to the new conversation
+        router.push(`/messages/${conversation.id}`)
+      }
+    } catch (error) {
+      console.error('Failed to create conversation:', error)
+    } finally {
+      setIsCreatingConversation(false)
     }
   }
 
@@ -282,6 +331,20 @@ export default function PropertyDetails() {
                       {isBooking ? 'Processing...' : 'Reserve'}
                     </button>
                   </div>
+
+                  {/* Message Host Button - only show for guests */}
+                  {session && session.user?.role === 'guest' && (
+                    <div className="d-grid mb-3">
+                      <button 
+                        type="button"
+                        className="btn btn-outline-secondary"
+                        onClick={handleMessageHost}
+                        disabled={isCreatingConversation}
+                      >
+                        {isCreatingConversation ? 'Opening...' : 'Message Host'}
+                      </button>
+                    </div>
+                  )}
 
                   <div className="text-center">
                     <small className="text-muted">You won't be charged yet</small>
